@@ -11,12 +11,11 @@
         - UV
         - docker
 
+    ATM the script must be run from the same directory that input_dir and
+    output_dir are located
+
     example:
-        ./to_md.py input_dir output_dir docx
-
-    converts word docs with extenstion .docx to markdown
-
-    input_dir and output_dir must be provided relative to to_md.py
+        ./repos/stuff/to_md.py <dir_to_process> <output_dir> docx
 """
 
 
