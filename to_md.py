@@ -4,18 +4,21 @@
 # ///
 
 """
-    script to recursively convert all word docs (.docx) in a given
-    input directory to markdown (.md) using pandoc.
+    script to recursively search an input directory for documents of a given
+    extension and convert to markdown (.md) using pandoc.
 
     requires:
         - UV
         - docker
 
     example:
-        ./to_md.py input_dir output_dir
+        ./to_md.py input_dir output_dir docx
+
+    converts word docs with extenstion .docx to markdown
 
     input_dir and output_dir must be provided relative to to_md.py
 """
+
 
 import argparse
 import pathlib
