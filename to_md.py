@@ -11,11 +11,8 @@
         - UV
         - docker
 
-    ATM the script must be run from the same directory that input_dir and
-    output_dir are located
-
     example:
-        ./repos/stuff/to_md.py <dir_to_process> <output_dir> docx
+        ./to_md.py <dir_to_process> docx
 """
 
 
@@ -26,27 +23,36 @@ import re
 import subprocess
 
 
-def process_directory(in_dir: str, out_dir: str, pattern: re.Pattern):
-    pathlib.Path(out_dir).mkdir(parents=True, exist_ok=True)
-    for entry in os.listdir(in_dir):
-        in_rel_path = os.path.join(in_dir, entry)
-        out_rel_path = os.path.join(out_dir, entry)
-        if os.path.isdir(in_rel_path):
-            process_directory(in_rel_path, out_rel_path, pattern)
+def process_directory(indir: str, data_parent_dir: str, pattern: re.Pattern, outdir_rel: str):
+    for entry in os.listdir(indir):
+        in_abs = os.path.join(indir, entry)
+        out_rel = os.path.join(outdir_rel, entry)
+        if os.path.isdir(in_abs):
+            process_directory(in_abs, data_parent_dir, pattern, out_rel)
         elif bool(re.search(pattern, entry)):
-            print(f"{in_rel_path} -> {out_rel_path}.md")
-            subprocess.run(f'docker run --rm --volume "`pwd`:/data" --user `id -u`:`id -g` pandoc/core {in_rel_path} -t gfm -o {out_rel_path}.md', shell=True)
+            print(f"{entry} -> {entry}.md")
+            cmd = f'docker run --rm --volume "{data_parent_dir}:/data" --user `id -u`:`id -g` pandoc/core {os.path.relpath(in_abs, data_parent_dir)} -t gfm -o {out_rel}.md'
+            subprocess.run(cmd, shell=True)
+            print()
 
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("input_directory")
-parser.add_argument("output_directory")
+parser.add_argument("indir")
 parser.add_argument("input_extension")
+parser.add_argument("--outdir_rel", default="output")
 args = parser.parse_args()
 
+pathlib.Path(
+        os.path.join(
+            os.path.dirname(args.indir),
+            args.outdir_rel
+        )
+).mkdir(parents=True, exist_ok=True)
+
 process_directory(
-    args.input_directory,
-    args.output_directory,
-    re.compile(rf"\.{args.input_extension}$")
+    args.indir,
+    args.indir,
+    re.compile(rf"\.{args.input_extension}$"),
+    args.outdir_rel
 )
